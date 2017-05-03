@@ -20,12 +20,10 @@
 
 #define MAX_MESSAGE_LEN 65536
 
-/*
 #ifdef NDEBUG
 #define DBG(x)
 #else
 #define DBG(x) debugprintf x
-*/
 static void debugprintf(char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
@@ -33,9 +31,8 @@ static void debugprintf(char *fmt, ...) {
     va_end(ap);
     fflush(stderr);
 }
-/*
 #endif
-*/
+
 __attribute__((constructor)) static void _liblogfaf_init(void) {
     DBG(("liblogfaf: init()\n"));
 }
@@ -53,7 +50,7 @@ void closelog(void) {
 }
 
 void __syslog_chk(int priority, int flag, const char *format, ...) {
-    DBG(("liblogfaf: __syslog_chk(%d, %d, %s)\n",
+    debugprintf(("liblogfaf: __syslog_chk(%d, %d, %s)\n",
          priority, flag, format));
     va_list ap;
     char str[MAX_MESSAGE_LEN];
@@ -64,7 +61,7 @@ void __syslog_chk(int priority, int flag, const char *format, ...) {
 }
 
 void syslog(int priority, const char *format, ...) {
-    DBG(("liblogfaf: syslog(%d, %s)\n", priority, format));
+    debugprintf(("liblogfaf: syslog(%d, %s)\n", priority, format));
     va_list ap;
     char str[MAX_MESSAGE_LEN];
     va_start(ap, format);
