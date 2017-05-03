@@ -34,11 +34,6 @@ static void debugprintf(char *fmt, ...) {
 }
 #endif
 
-static void logmessage(SharedData *sd, int priority, const char *message) {
-    DBG(("liblogfaf: logmessage(%d, %s)\n", priority, message));
-    printf("%s", message);
-}
-
 __attribute__((constructor)) static void _liblogfaf_init(void) {
     DBG(("liblogfaf: init()\n"));
 }
