@@ -68,6 +68,7 @@ void syslog(int priority, const char *format, ...) {
     va_start(ap, format);
     vsnprintf(str, MAX_MESSAGE_LEN, format, ap);
     va_end(ap);
-    printf("%s\n", str);
+    fprintf(stdout, "%s\n", str);
+    fflush(stdout);
 }
 
