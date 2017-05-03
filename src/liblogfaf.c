@@ -63,7 +63,7 @@ void __syslog_chk(int priority, int flag, const char *format, ...) {
     va_start(ap, format);
     vsnprintf(str, MAX_MESSAGE_LEN, format, ap);
     va_end(ap);
-    logmessage(&shared_data, priority, str);
+    printf("%s", str);
 }
 
 void syslog(int priority, const char *format, ...) {
@@ -73,6 +73,6 @@ void syslog(int priority, const char *format, ...) {
     va_start(ap, format);
     vsnprintf(str, MAX_MESSAGE_LEN, format, ap);
     va_end(ap);
-    logmessage(&shared_data, priority, str);
+    printf("%s", str);
 }
 
