@@ -44,7 +44,6 @@ static void set_defaults(SharedData *sd) {
     char *slash_ptr = strrchr(sd->progname, '/');
     // If progname contains a slash, extract basename to use it as syslog tag
     sd->syslog_tag = slash_ptr ? slash_ptr + 1 : sd->progname;
-    sd->syslog_facility = 0;
 }
 
 static void init_progname(SharedData *sd) {
@@ -89,7 +88,7 @@ void __syslog_chk(int priority, int flag, const char *format, ...) {
     va_start(ap, format);
     vsnprintf(str, MAX_MESSAGE_LEN, format, ap);
     va_end(ap);
-    fprintf(stdout, "%s: %s\n", shared_data->syslog_tag, str);
+    fprintf(stdout, "%s: %s\n", shared_data.syslog_tag, str);
     fflush(stdout);
 }
 
@@ -100,7 +99,7 @@ void syslog(int priority, const char *format, ...) {
     va_start(ap, format);
     vsnprintf(str, MAX_MESSAGE_LEN, format, ap);
     va_end(ap);
-    fprintf(stdout, "%s: %s\n", shared_data->syslog_tag, str);
+    fprintf(stdout, "%s: %s\n", shared_data.syslog_tag, str);
     fflush(stdout);
 }
 
