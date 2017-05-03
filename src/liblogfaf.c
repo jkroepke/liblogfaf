@@ -20,11 +20,12 @@
 
 #define MAX_MESSAGE_LEN 65536
 
+/*
 #ifdef NDEBUG
 #define DBG(x)
 #else
 #define DBG(x) debugprintf x
-
+*/
 static void debugprintf(char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
@@ -32,8 +33,9 @@ static void debugprintf(char *fmt, ...) {
     va_end(ap);
     fflush(stderr);
 }
+/*
 #endif
-
+*/
 __attribute__((constructor)) static void _liblogfaf_init(void) {
     DBG(("liblogfaf: init()\n"));
 }
