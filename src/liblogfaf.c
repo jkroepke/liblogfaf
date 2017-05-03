@@ -18,34 +18,7 @@
 #include <limits.h>
 #include <pthread.h>
 
-#if defined(__APPLE__)
-#include <crt_externs.h>
-#define HOST_NAME_MAX 255
-#else
-#define HOST_NAME_MAX _POSIX_HOST_NAME_MAX
-#endif
-
 #define MAX_MESSAGE_LEN 65536
-
-// From RFC3164
-static const char *months[] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
-
-typedef struct {
-    char hostname[HOST_NAME_MAX];
-    char progname[1024];
-
-    int syslog_facility;
-    const char *syslog_tag;
-
-    struct addrinfo *serveraddr;
-    struct addrinfo *bind_ip;
-    int sockfd;
-
-    pthread_mutex_t lock;
-} SharedData;
-
-static SharedData shared_data = { "", "" };
 
 #ifdef NDEBUG
 #define DBG(x)
@@ -61,13 +34,6 @@ static void debugprintf(char *fmt, ...) {
 }
 #endif
 
-static void set_defaults(SharedData *sd) {
-    char *slash_ptr = strrchr(sd->progname, '/');
-    // If progname contains a slash, extract basename to use it as syslog tag
-    sd->syslog_tag = slash_ptr ? slash_ptr + 1 : sd->progname;
-    sd->syslog_facility = 0;
-}
-
 static void logmessage(SharedData *sd, int priority, const char *message) {
     DBG(("liblogfaf: logmessage(%d, %s)\n", priority, message));
     printf("%s", message);
@@ -79,15 +45,10 @@ __attribute__((constructor)) static void _liblogfaf_init(void) {
 
 __attribute__((destructor)) static void _liblogfaf_fini(void) {
     DBG(("liblogfaf: fini()\n"));
-    if (pthread_mutex_destroy(&shared_data.lock) != 0) {
-        fprintf(stderr, "liblogfaf: pthread_mutex_destroy() failed\n");
-        exit(1);
-    }
 }
 
 void openlog(const char *ident, int option, int facility) {
     DBG(("liblogfaf: openlog(%s, %d, %d)\n", ident, option, facility));
-    // making use of the `option` parameter can be added here if you need it
 }
 
 void closelog(void) {
