@@ -20,6 +20,13 @@
 
 #define MAX_MESSAGE_LEN 65536
 
+typedef struct {
+    char progname[1024];
+    const char *syslog_tag;
+} SharedData;
+
+static SharedData shared_data = {  };
+
 #ifdef NDEBUG
 #define DBG(x)
 #else
@@ -33,8 +40,31 @@ static void debugprintf(char *fmt, ...) {
 }
 #endif
 
+static void set_defaults(SharedData *sd) {
+    char *slash_ptr = strrchr(sd->progname, '/');
+    // If progname contains a slash, extract basename to use it as syslog tag
+    sd->syslog_tag = slash_ptr ? slash_ptr + 1 : sd->progname;
+    sd->syslog_facility = 0;
+}
+
+static void init_progname(SharedData *sd) {
+#if defined(__APPLE__)
+    sscanf(*_NSGetProgname(), "%1023s", sd->progname);
+#elif defined(__FreeBSD__)
+    sscanf(getprogname(), "%1023s", sd->progname);
+#else
+    FILE* cmdline = fopen("/proc/self/cmdline", "rb");
+    if (cmdline) {
+        fscanf(cmdline, "%1023s", sd->progname);
+        fclose(cmdline);
+    }
+#endif
+}
+
 __attribute__((constructor)) static void _liblogfaf_init(void) {
     DBG(("liblogfaf: init()\n"));
+    init_progname(&shared_data);
+    set_defaults(&shared_data);
 }
 
 __attribute__((destructor)) static void _liblogfaf_fini(void) {
@@ -43,6 +73,8 @@ __attribute__((destructor)) static void _liblogfaf_fini(void) {
 
 void openlog(const char *ident, int option, int facility) {
     DBG(("liblogfaf: openlog(%s, %d, %d)\n", ident, option, facility));
+    if (ident)
+        shared_data.syslog_tag = ident;
 }
 
 void closelog(void) {
@@ -57,7 +89,7 @@ void __syslog_chk(int priority, int flag, const char *format, ...) {
     va_start(ap, format);
     vsnprintf(str, MAX_MESSAGE_LEN, format, ap);
     va_end(ap);
-    fprintf(stdout, "%s\n", str);
+    fprintf(stdout, "%s: %s\n", shared_data->syslog_tag, str);
     fflush(stdout);
 }
 
@@ -68,7 +100,7 @@ void syslog(int priority, const char *format, ...) {
     va_start(ap, format);
     vsnprintf(str, MAX_MESSAGE_LEN, format, ap);
     va_end(ap);
-    fprintf(stdout, "%s\n", str);
+    fprintf(stdout, "%s: %s\n", shared_data->syslog_tag, str);
     fflush(stdout);
 }
 
