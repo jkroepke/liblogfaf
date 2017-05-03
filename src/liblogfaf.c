@@ -50,8 +50,8 @@ void closelog(void) {
 }
 
 void __syslog_chk(int priority, int flag, const char *format, ...) {
-    debugprintf(("liblogfaf: __syslog_chk(%d, %d, %s)\n",
-         priority, flag, format));
+    debugprintf("liblogfaf: __syslog_chk(%d, %d, %s)\n",
+         priority, flag, format);
     va_list ap;
     char str[MAX_MESSAGE_LEN];
     va_start(ap, format);
@@ -61,7 +61,7 @@ void __syslog_chk(int priority, int flag, const char *format, ...) {
 }
 
 void syslog(int priority, const char *format, ...) {
-    debugprintf(("liblogfaf: syslog(%d, %s)\n", priority, format));
+    debugprintf("liblogfaf: syslog(%d, %s)\n", priority, format);
     va_list ap;
     char str[MAX_MESSAGE_LEN];
     va_start(ap, format);
