@@ -12,6 +12,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <netdb.h>
 #include <unistd.h>
 #include <time.h>
@@ -26,6 +27,8 @@ typedef struct {
 } SharedData;
 
 static SharedData shared_data = {  };
+
+const char * target;
 
 #ifdef NDEBUG
 #define DBG(x)
@@ -64,6 +67,8 @@ __attribute__((constructor)) static void _liblogfaf_init(void) {
     DBG(("liblogfaf: init()\n"));
     init_progname(&shared_data);
     set_defaults(&shared_data);
+    target = getenv("LIBLOGFAF_SENDTO");
+    DBG(("liblogfaf: LIBLOGFAF_SENDTO: %s\n", getenv("LIBLOGFAF_SENDTO")));
 }
 
 __attribute__((destructor)) static void _liblogfaf_fini(void) {
@@ -88,8 +93,18 @@ void __syslog_chk(int priority, int flag, const char *format, ...) {
     va_start(ap, format);
     vsnprintf(str, MAX_MESSAGE_LEN, format, ap);
     va_end(ap);
-    fprintf(stdout, "%s: %s\n", shared_data.syslog_tag, str);
-    fflush(stdout);
+    
+    DBG(("liblogfaf: pipe messages to %s\n", target));
+        
+    if(NULL != target) { 
+        DBG(("liblogfaf: fopen(%s)\n", target));
+        FILE* fd = fopen(target, "wb");
+        fprintf(fd, "%s: %s\n", shared_data.syslog_tag, str);
+        fclose(fd);
+    } else {
+        fprintf(stdout, "%s: %s\n", shared_data.syslog_tag, str);
+        fflush(stdout);
+    }
 }
 
 void syslog(int priority, const char *format, ...) {
@@ -99,7 +114,17 @@ void syslog(int priority, const char *format, ...) {
     va_start(ap, format);
     vsnprintf(str, MAX_MESSAGE_LEN, format, ap);
     va_end(ap);
-    fprintf(stdout, "%s: %s\n", shared_data.syslog_tag, str);
-    fflush(stdout);
+    
+    DBG(("liblogfaf: pipe messages to %s\n", target));
+        
+    if(NULL != target) { 
+        DBG(("liblogfaf: fopen(%s)\n", target));
+        FILE* fd = fopen(target, "wb");
+        fprintf(fd, "%s: %s\n", shared_data.syslog_tag, str);
+        fclose(fd);
+    } else {
+        fprintf(stdout, "%s: %s\n", shared_data.syslog_tag, str);
+        fflush(stdout);
+    }
 }
 
